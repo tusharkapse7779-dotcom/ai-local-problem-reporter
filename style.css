@@ -1,5 +1,4 @@
 body {
-  margin: 0;
   font-family: Arial;
   background: linear-gradient(135deg,#4facfe,#00f2fe);
 }
@@ -7,36 +6,18 @@ body {
 .container {
   max-width: 420px;
   margin: auto;
-  padding: 20px;
   color: white;
-}
-
-.card {
-  background: rgba(255,255,255,0.15);
-  padding: 15px;
-  border-radius: 15px;
 }
 
 input, select, button {
   width: 100%;
   margin: 8px 0;
   padding: 10px;
-  border-radius: 10px;
-  border: none;
 }
 
-button {
-  background: linear-gradient(45deg, orange, red);
-  color: white;
-  font-weight: bold;
-}
-
-.output-card {
-  margin-top: 15px;
-  background: white;
-  color: black;
-  padding: 10px;
-  border-radius: 10px;
+#map {
+  height: 200px;
+  margin-top: 10px;
 }
 
 .report-card {
@@ -44,12 +25,9 @@ button {
   color: black;
   padding: 10px;
   margin-top: 10px;
-  border-radius: 10px;
-  cursor: pointer;
 }
 
-.report-card img {
+#preview {
   width: 100%;
-  border-radius: 8px;
-  margin-top: 5px;
+  display: none;
 }
