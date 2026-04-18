@@ -1,14 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CivicSense AI</title>
+  <title>UrbanPulse AI</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
 <body>
 
-<div class="container">
-  <h1>🚀 CivicSense AI Dashboard</h1>
+<!-- HERO -->
+<div class="hero">
+  <div class="logo">🌆</div>
+  <h1>UrbanPulse AI</h1>
+  <p class="tagline">Smart Civic Analytics Dashboard</p>
+
+  <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+
+  <div class="hero-buttons">
+    <a href="#report" class="primary-btn">🚀 Report Issue</a>
+    <a href="#reportList" class="secondary-btn">📊 Dashboard</a>
+  </div>
+</div>
+
+<div class="container" id="report">
 
   <div class="card">
     <select id="category">
@@ -20,16 +33,16 @@
     </select>
 
     <select id="state">
-      <option value="">Select State</option>
+      <option value="">State</option>
       <option>Maharashtra</option>
       <option>Delhi</option>
       <option>Karnataka</option>
     </select>
 
-    <input id="district" placeholder="Enter District">
+    <input id="district" placeholder="District">
     <input id="problem" placeholder="Describe problem">
 
-    <input type="file" id="imageInput" accept="image/*" capture="environment">
+    <input type="file" id="imageInput">
     <img id="preview">
 
     <button onclick="getLocation()">📍 Get Location</button>
@@ -39,19 +52,21 @@
 
   <div id="map"></div>
 
-  <pre id="output">Ready...</pre>
+  <div class="output-card">
+    <pre id="output">Ready...</pre>
+  </div>
 
-  <h3>Reports</h3>
+  <h3>📋 Reports</h3>
   <div id="reportList"></div>
 
-  <h3>Admin Panel</h3>
-  <input id="searchToken" placeholder="Token">
+  <h3>🛠 Admin Panel</h3>
+  <input id="searchToken" placeholder="Enter Token">
   <select id="statusUpdate">
     <option>Pending</option>
     <option>In Progress</option>
     <option>Completed</option>
   </select>
-  <button onclick="updateStatus()">Update</button>
+  <button onclick="updateStatus()">Update Status</button>
 
 </div>
 
