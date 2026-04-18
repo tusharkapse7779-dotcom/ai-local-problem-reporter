@@ -1,14 +1,17 @@
 let reports = JSON.parse(localStorage.getItem("reports")) || [];
 
-// 10 DEMO REPORTS
+// DEMO REPORTS (REALISTIC)
 if (reports.length === 0) {
+  const issues = ["Garbage","Water Leakage","Road Damage","Dog Bite","Street Light"];
+  const states = ["Maharashtra","Delhi","Karnataka","Telangana"];
+
   for (let i = 1; i <= 10; i++) {
     reports.push({
       id: "TOK" + i,
-      cat: ["Garbage","Pothole","Water Leakage","Street Light"][i%4],
-      state: ["Maharashtra","Delhi","Karnataka","Telangana"][i%4],
+      cat: issues[i % issues.length],
+      state: states[i % states.length],
       dist: "District " + i,
-      desc: "Sample issue " + i,
+      desc: issues[i % issues.length] + " issue reported",
       img: "https://picsum.photos/200?random=" + i
     });
   }
@@ -17,11 +20,12 @@ if (reports.length === 0) {
 
 window.onload = () => {
   document.getElementById("btn").addEventListener("click", generate);
+  document.getElementById("voiceBtn").addEventListener("click", startVoice);
   renderReports();
-  renderChart();
+  renderCharts();
 };
 
-// GENERATE REPORT (FIXED)
+// GENERATE REPORT
 function generate() {
   const cat = document.getElementById("category").value;
   const state = document.getElementById("state").value;
@@ -45,7 +49,7 @@ function generate() {
   output.innerText = "✅ Report Generated\nToken: " + token;
 
   renderReports();
-  renderChart();
+  renderCharts();
 }
 
 // SHOW REPORTS
@@ -64,7 +68,7 @@ function renderReports() {
   });
 }
 
-// CLICK → SHOW FULL DETAILS
+// DETAILS
 function showDetails(id) {
   const r = reports.find(x => x.id == id);
   document.getElementById("output").innerText =
@@ -75,19 +79,46 @@ function showDetails(id) {
     "Description: " + r.desc;
 }
 
-// CHART
-function renderChart() {
-  const counts = {Garbage:0,Pothole:0,"Water Leakage":0,"Street Light":0};
+// VOICE INPUT
+function startVoice() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-IN";
+  recognition.start();
 
-  reports.forEach(r => counts[r.cat]++);
+  recognition.onresult = function(event) {
+    document.getElementById("problem").value = event.results[0][0].transcript;
+  };
+}
 
-  new Chart(document.getElementById("chart"), {
+// CHARTS
+function renderCharts() {
+  const issueCount = {};
+  const stateCount = {};
+
+  reports.forEach(r => {
+    issueCount[r.cat] = (issueCount[r.cat] || 0) + 1;
+    stateCount[r.state] = (stateCount[r.state] || 0) + 1;
+  });
+
+  new Chart(document.getElementById("issueChart"), {
+    type: "pie",
+    data: {
+      labels: Object.keys(issueCount),
+      datasets: [{
+        data: Object.values(issueCount),
+        backgroundColor: ["red","blue","orange","green","purple"]
+      }]
+    }
+  });
+
+  new Chart(document.getElementById("stateChart"), {
     type: "bar",
     data: {
-      labels: Object.keys(counts),
+      labels: Object.keys(stateCount),
       datasets: [{
-        label: "Issues Count",
-        data: Object.values(counts)
+        label: "Reports by State",
+        data: Object.values(stateCount),
+        backgroundColor: ["#ff6384","#36a2eb","#ffce56","#4bc0c0"]
       }]
     }
   });
