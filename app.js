@@ -1,125 +1,156 @@
-let reports = JSON.parse(localStorage.getItem("reports")) || [];
-
-// DEMO REPORTS (REALISTIC)
-if (reports.length === 0) {
-  const issues = ["Garbage","Water Leakage","Road Damage","Dog Bite","Street Light"];
-  const states = ["Maharashtra","Delhi","Karnataka","Telangana"];
-
-  for (let i = 1; i <= 10; i++) {
-    reports.push({
-      id: "TOK" + i,
-      cat: issues[i % issues.length],
-      state: states[i % states.length],
-      dist: "District " + i,
-      desc: issues[i % issues.length] + " issue reported",
-      img: "https://picsum.photos/200?random=" + i
-    });
-  }
-  localStorage.setItem("reports", JSON.stringify(reports));
-}
+let reports = [];
+let map, marker, heatLayer;
+let userLocation = { lat: 19.07, lng: 72.87 };
+let lastReport = null;
 
 window.onload = () => {
   document.getElementById("btn").addEventListener("click", generate);
-  document.getElementById("voiceBtn").addEventListener("click", startVoice);
+
+  document.getElementById("imageInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) {
+      const preview = document.getElementById("preview");
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    }
+  });
+
+  initMap();
+  loadDemo();
   renderReports();
-  renderCharts();
 };
 
-// GENERATE REPORT
+// MAP
+function initMap() {
+  map = L.map('map').setView([19.07,72.87], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+}
+
+// LOCATION
+function getLocation() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLocation = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    };
+
+    map.setView([userLocation.lat,userLocation.lng],13);
+    if(marker) map.removeLayer(marker);
+
+    marker = L.marker([userLocation.lat,userLocation.lng]).addTo(map);
+  });
+}
+
+// GENERATE
 function generate() {
-  const cat = document.getElementById("category").value;
+  const cat = category.value;
   const state = document.getElementById("state").value;
-  const dist = document.getElementById("district").value;
+  const dist = district.value;
   const problem = document.getElementById("problem").value;
-  const file = document.getElementById("imageInput").files[0];
-  const output = document.getElementById("output");
 
   if (!cat || !state || !dist || !problem) {
-    output.innerText = "⚠️ Fill all fields";
+    output.innerText = "Fill all fields";
     return;
   }
 
-  const token = "TOK" + Math.floor(Math.random() * 1000000);
-  const img = file ? URL.createObjectURL(file) : "https://picsum.photos/200";
+  const token = "TOK" + Math.floor(Math.random()*100000);
 
-  reports.push({ id: token, cat, state, dist, desc: problem, img });
+  const report = {
+    id: token,
+    cat, state, dist,
+    desc: problem,
+    lat: userLocation.lat,
+    lng: userLocation.lng,
+    status: "Pending"
+  };
 
-  localStorage.setItem("reports", JSON.stringify(reports));
+  reports.push(report);
+  lastReport = report;
 
-  output.innerText = "✅ Report Generated\nToken: " + token;
+  output.innerText = "Token: " + token;
 
   renderReports();
-  renderCharts();
+  updateHeatmap();
 }
 
-// SHOW REPORTS
+// RENDER
 function renderReports() {
-  const list = document.getElementById("reportList");
-  list.innerHTML = "";
+  reportList.innerHTML = "";
 
   reports.forEach(r => {
-    list.innerHTML += `
-      <div class="report-card" onclick="showDetails('${r.id}')">
-        <b>${r.cat}</b> (${r.state})<br>
-        Token: ${r.id}
-        <img src="${r.img}">
+    reportList.innerHTML += `
+      <div class="report-card" onclick="show('${r.id}')">
+        ${r.cat} (${r.state})<br>
+        Token: ${r.id}<br>
+        Status: ${r.status}
       </div>
     `;
   });
 }
 
-// DETAILS
-function showDetails(id) {
+// SHOW
+function show(id) {
   const r = reports.find(x => x.id == id);
-  document.getElementById("output").innerText =
-    "📄 FULL REPORT\n\n" +
-    "Token: " + r.id + "\n" +
-    "Issue: " + r.cat + "\n" +
-    "Location: " + r.state + ", " + r.dist + "\n" +
-    "Description: " + r.desc;
+
+  map.setView([r.lat,r.lng],13);
+  if(marker) map.removeLayer(marker);
+  marker = L.marker([r.lat,r.lng]).addTo(map);
+
+  output.innerText =
+    "Token: " + r.id +
+    "\nIssue: " + r.cat +
+    "\nStatus: " + r.status;
 }
 
-// VOICE INPUT
-function startVoice() {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = "en-IN";
-  recognition.start();
+// HEATMAP
+function updateHeatmap() {
+  if(heatLayer) map.removeLayer(heatLayer);
 
-  recognition.onresult = function(event) {
-    document.getElementById("problem").value = event.results[0][0].transcript;
-  };
+  const points = reports.map(r => [r.lat,r.lng,Math.random()]);
+
+  heatLayer = L.heatLayer(points).addTo(map);
 }
 
-// CHARTS
-function renderCharts() {
-  const issueCount = {};
-  const stateCount = {};
+// ADMIN
+function updateStatus() {
+  const t = searchToken.value;
+  const s = statusUpdate.value;
 
-  reports.forEach(r => {
-    issueCount[r.cat] = (issueCount[r.cat] || 0) + 1;
-    stateCount[r.state] = (stateCount[r.state] || 0) + 1;
-  });
+  const r = reports.find(x => x.id == t);
+  if (!r) return alert("Not found");
 
-  new Chart(document.getElementById("issueChart"), {
-    type: "pie",
-    data: {
-      labels: Object.keys(issueCount),
-      datasets: [{
-        data: Object.values(issueCount),
-        backgroundColor: ["red","blue","orange","green","purple"]
-      }]
-    }
-  });
+  r.status = s;
+  renderReports();
+}
 
-  new Chart(document.getElementById("stateChart"), {
-    type: "bar",
-    data: {
-      labels: Object.keys(stateCount),
-      datasets: [{
-        label: "Reports by State",
-        data: Object.values(stateCount),
-        backgroundColor: ["#ff6384","#36a2eb","#ffce56","#4bc0c0"]
-      }]
-    }
-  });
+// PDF EXPORT
+function downloadPDF() {
+  if (!lastReport) return alert("Generate report first");
+
+  const doc = new jspdf.jsPDF();
+
+  doc.text("CivicSense AI Report", 10, 10);
+  doc.text("Token: " + lastReport.id, 10, 20);
+  doc.text("Issue: " + lastReport.cat, 10, 30);
+  doc.text("Location: " + lastReport.state + ", " + lastReport.dist, 10, 40);
+  doc.text("Status: " + lastReport.status, 10, 50);
+  doc.text("Description: " + lastReport.desc, 10, 60);
+
+  doc.save("report.pdf");
+}
+
+// DEMO
+function loadDemo() {
+  for(let i=1;i<=5;i++){
+    reports.push({
+      id:"TOK"+i,
+      cat:"Garbage",
+      state:"Maharashtra",
+      dist:"District "+i,
+      desc:"Demo issue",
+      lat:19+Math.random(),
+      lng:72+Math.random(),
+      status:"Pending"
+    });
+  }
 }
