@@ -1,50 +1,107 @@
+let reports = JSON.parse(localStorage.getItem("reports")) || [
+  {
+    id: 101,
+    category: "Garbage",
+    location: "Mumbai",
+    status: "Pending",
+    desc: "Garbage overflow near road",
+    image: ""
+  },
+  {
+    id: 102,
+    category: "Pothole",
+    location: "Delhi",
+    status: "In Progress",
+    desc: "Large pothole causing accidents",
+    image: ""
+  },
+  {
+    id: 103,
+    category: "Water Leakage",
+    location: "Aurangabad",
+    status: "Completed",
+    desc: "Water pipe leaking continuously",
+    image: ""
+  },
+  {
+    id: 104,
+    category: "Street Light",
+    location: "Pune",
+    status: "Pending",
+    desc: "Street light not working",
+    image: ""
+  },
+  {
+    id: 105,
+    category: "Garbage",
+    location: "Hyderabad",
+    status: "In Progress",
+    desc: "Garbage pile not cleared",
+    image: ""
+  }
+];
 
-async function generate() {
+function saveReports() {
+  localStorage.setItem("reports", JSON.stringify(reports));
+}
+
+function generate() {
   const category = document.getElementById("category").value;
   const problem = document.getElementById("problem").value;
   const location = document.getElementById("location").value;
+  const imageInput = document.getElementById("imageInput");
   const output = document.getElementById("output");
 
   if (!category || !problem || !location) {
-    alert("Please fill all fields");
+    alert("Fill all fields");
     return;
   }
 
-  output.innerText = "⏳ Generating smart report...";
+  const id = Date.now();
 
-  const prompt = `
-You are a smart civic assistant.
+  const newReport = {
+    id,
+    category,
+    location,
+    status: "Pending",
+    desc: problem,
+    image: imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : ""
+  };
 
-Category: ${category}
-Problem: ${problem}
-Location: ${location}
+  reports.push(newReport);
+  saveReports();
+  renderReports();
 
-Based on category, decide department automatically.
-
-Return:
-Title:
-Description:
-Department:
-Priority (Low/Medium/High):
-`;
-
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer YOUR_API_KEY",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-
-    const data = await res.json();
-    output.innerText = data.choices[0].message.content;
-
-  } catch (e) {
-    output.innerText = "❌ Error generating report";
-  }
+  output.innerText = `✅ Report Generated
+Token No: ${id}
+Status: Pending`;
 }
+
+// Auto status update (smart feature)
+setInterval(() => {
+  reports.forEach(r => {
+    if (r.status === "Pending") r.status = "In Progress";
+    else if (r.status === "In Progress") r.status = "Completed";
+  });
+  saveReports();
+  renderReports();
+}, 8000);
+
+function renderReports() {
+  const container = document.getElementById("reportList");
+  container.innerHTML = "";
+
+  reports.forEach(r => {
+    container.innerHTML += `
+      <div class="report-card">
+        <h4>${r.category} - ${r.location}</h4>
+        <p>${r.desc}</p>
+        <p><b>Token:</b> ${r.id}</p>
+        <p>Status: <span class="${r.status}">${r.status}</span></p>
+        ${r.image ? `<img src="${r.image}" />` : ""}
+      </div>
+    `;
+  });
+}
+
+renderReports();
