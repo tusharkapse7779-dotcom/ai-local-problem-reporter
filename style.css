@@ -1,18 +1,61 @@
+:root {
+  --bg: linear-gradient(135deg,#4facfe,#00f2fe);
+  --text: #000;
+  --card: rgba(255,255,255,0.25);
+}
+
+.dark {
+  --bg: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  --text: #fff;
+  --card: rgba(255,255,255,0.08);
+}
+
 body {
+  margin: 0;
   font-family: Arial;
-  background: linear-gradient(135deg,#4facfe,#00f2fe);
+  background: var(--bg);
+  color: var(--text);
+  transition: 0.3s;
+}
+
+.hero {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  color: white;
+}
+
+.logo { font-size: 50px; }
+
+.tagline { font-size: 14px; }
+
+.theme-btn {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 20px;
+  border: none;
 }
 
 .container {
   max-width: 420px;
   margin: auto;
-  color: white;
+  padding: 15px;
+}
+
+.card, .report-card, .output-card {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 10px;
+  margin-top: 10px;
 }
 
 input, select, button {
   width: 100%;
-  margin: 8px 0;
+  margin: 6px 0;
   padding: 10px;
+  border-radius: 10px;
+  border: none;
 }
 
 #map {
@@ -21,13 +64,11 @@ input, select, button {
 }
 
 .report-card {
-  background: white;
-  color: black;
-  padding: 10px;
-  margin-top: 10px;
+  cursor: pointer;
 }
 
 #preview {
   width: 100%;
   display: none;
+  border-radius: 10px;
 }
