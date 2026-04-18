@@ -3,76 +3,44 @@
 <head>
   <title>UrbanPulse AI</title>
   <link rel="stylesheet" href="style.css">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
 <body>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="logo">🌆</div>
-  <h1>UrbanPulse AI</h1>
-  <p class="tagline">Smart Civic Analytics Dashboard</p>
+<div class="container">
 
-  <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+<h1>🌆 UrbanPulse AI</h1>
+<p class="tag">Smart Civic Dashboard</p>
 
-  <div class="hero-buttons">
-    <a href="#report" class="primary-btn">🚀 Report Issue</a>
-    <a href="#reportList" class="secondary-btn">📊 Dashboard</a>
-  </div>
+<div class="card">
+  <select id="category">
+    <option value="">Select Issue</option>
+    <option>Garbage</option>
+    <option>Water Leakage</option>
+    <option>Road Damage</option>
+  </select>
+
+  <input id="district" placeholder="District">
+  <input id="problem" placeholder="Describe problem">
+
+  <button onclick="generate()">Generate Report</button>
 </div>
 
-<div class="container" id="report">
+<div id="output" class="output">Ready...</div>
 
-  <div class="card">
-    <select id="category">
-      <option value="">Select Issue</option>
-      <option>Garbage</option>
-      <option>Water Leakage</option>
-      <option>Road Damage</option>
-      <option>Dog Bite</option>
-    </select>
+<h3>📊 Analytics</h3>
+<div id="analytics" class="analytics"></div>
 
-    <select id="state">
-      <option value="">State</option>
-      <option>Maharashtra</option>
-      <option>Delhi</option>
-      <option>Karnataka</option>
-    </select>
+<div id="map"></div>
 
-    <input id="district" placeholder="District">
-    <input id="problem" placeholder="Describe problem">
-
-    <input type="file" id="imageInput">
-    <img id="preview">
-
-    <button onclick="getLocation()">📍 Get Location</button>
-    <button id="btn">🚀 Generate Report</button>
-    <button onclick="downloadPDF()">📄 Export PDF</button>
-  </div>
-
-  <div id="map"></div>
-
-  <div class="output-card">
-    <pre id="output">Ready...</pre>
-  </div>
-
-  <h3>📋 Reports</h3>
-  <div id="reportList"></div>
-
-  <h3>🛠 Admin Panel</h3>
-  <input id="searchToken" placeholder="Enter Token">
-  <select id="statusUpdate">
-    <option>Pending</option>
-    <option>In Progress</option>
-    <option>Completed</option>
-  </select>
-  <button onclick="updateStatus()">Update Status</button>
+<h3>📋 Reports</h3>
+<div id="list"></div>
 
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
 <script src="app.js"></script>
 
 </body>
