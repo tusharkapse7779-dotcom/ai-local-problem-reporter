@@ -1,134 +1,156 @@
 let reports = [];
-let map, heatLayer, markers = [];
+let map, marker, heatLayer;
+let userLocation = { lat: 19.07, lng: 72.87 };
+let lastReport = null;
 
-let userLocation = {
-  lat: 19.07,
-  lng: 72.87
-};
-
-// MAP INIT
 window.onload = () => {
-  map = L.map('map').setView([19.07,72.87],5);
+  document.getElementById("btn").addEventListener("click", generate);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-    .addTo(map);
+  document.getElementById("imageInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) {
+      const preview = document.getElementById("preview");
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    }
+  });
+
+  initMap();
+  loadDemo();
+  renderReports();
 };
 
-// DISTANCE (duplicate check)
-function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2-lat1) * Math.PI/180;
-  const dLon = (lon2-lon1) * Math.PI/180;
-
-  const a =
-    Math.sin(dLat/2)*Math.sin(dLat/2) +
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
-    Math.sin(dLon/2)*Math.sin(dLon/2);
-
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+// MAP
+function initMap() {
+  map = L.map('map').setView([19.07,72.87], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 }
 
-// GENERATE REPORT
+// LOCATION
+function getLocation() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLocation = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    };
+
+    map.setView([userLocation.lat,userLocation.lng],13);
+    if(marker) map.removeLayer(marker);
+
+    marker = L.marker([userLocation.lat,userLocation.lng]).addTo(map);
+  });
+}
+
+// GENERATE
 function generate() {
   const cat = category.value;
+  const state = document.getElementById("state").value;
   const dist = district.value;
-  const prob = problem.value;
+  const problem = document.getElementById("problem").value;
 
-  if(!cat || !dist || !prob){
-    output.innerText = "⚠️ Fill all fields";
+  if (!cat || !state || !dist || !problem) {
+    output.innerText = "Fill all fields";
     return;
-  }
-
-  // fake location (safe demo)
-  const lat = 19 + Math.random();
-  const lng = 72 + Math.random();
-
-  // duplicate check
-  for(let r of reports){
-    if(getDistance(lat,lng,r.lat,r.lng) < 0.3 && r.cat === cat){
-      output.innerText = "⚠️ Duplicate detected!\nToken: "+r.id;
-      return;
-    }
   }
 
   const token = "TOK" + Math.floor(Math.random()*100000);
 
   const report = {
     id: token,
-    cat,
-    dist,
-    prob,
-    lat,
-    lng,
+    cat, state, dist,
+    desc: problem,
+    lat: userLocation.lat,
+    lng: userLocation.lng,
     status: "Pending"
   };
 
   reports.push(report);
+  lastReport = report;
 
-  output.innerText = "✅ Report Generated\nToken: "+token;
+  output.innerText = "Token: " + token;
 
-  render();
-  updateMap();
+  renderReports();
+  updateHeatmap();
 }
 
 // RENDER
-function render() {
-  list.innerHTML = "";
+function renderReports() {
+  reportList.innerHTML = "";
 
   reports.forEach(r => {
-    list.innerHTML += `
-      <div class="report" onclick="toggle('${r.id}')">
-        <b>${r.cat}</b> (${r.dist})<br>
+    reportList.innerHTML += `
+      <div class="report-card" onclick="show('${r.id}')">
+        ${r.cat} (${r.state})<br>
         Token: ${r.id}<br>
         Status: ${r.status}
       </div>
     `;
   });
-
-  updateAnalytics();
 }
 
-// TOGGLE STATUS
-function toggle(id){
-  const r = reports.find(x=>x.id===id);
-  r.status = r.status === "Pending" ? "Done" : "Pending";
-  render();
+// SHOW
+function show(id) {
+  const r = reports.find(x => x.id == id);
+
+  map.setView([r.lat,r.lng],13);
+  if(marker) map.removeLayer(marker);
+  marker = L.marker([r.lat,r.lng]).addTo(map);
+
+  output.innerText =
+    "Token: " + r.id +
+    "\nIssue: " + r.cat +
+    "\nStatus: " + r.status;
 }
 
-// ANALYTICS
-function updateAnalytics(){
-  let g=0,w=0,r=0;
-
-  reports.forEach(x=>{
-    if(x.cat==="Garbage") g++;
-    if(x.cat==="Water Leakage") w++;
-    if(x.cat==="Road Damage") r++;
-  });
-
-  analytics.innerHTML = `
-    <div class="analytics-box red">Garbage: ${g}</div>
-    <div class="analytics-box blue">Water: ${w}</div>
-    <div class="analytics-box green">Road: ${r}</div>
-  `;
-}
-
-// MAP + HEAT + PINS
-function updateMap(){
+// HEATMAP
+function updateHeatmap() {
   if(heatLayer) map.removeLayer(heatLayer);
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
 
-  const pts=[];
+  const points = reports.map(r => [r.lat,r.lng,Math.random()]);
 
-  reports.forEach(r=>{
-    pts.push([r.lat,r.lng,0.5]);
+  heatLayer = L.heatLayer(points).addTo(map);
+}
 
-    const m = L.marker([r.lat,r.lng])
-      .addTo(map)
-      .bindPopup(`${r.cat}<br>${r.id}`);
+// ADMIN
+function updateStatus() {
+  const t = searchToken.value;
+  const s = statusUpdate.value;
 
-    markers.push(m);
-  });
+  const r = reports.find(x => x.id == t);
+  if (!r) return alert("Not found");
 
-  heatLayer = L.heatLayer(pts).addTo(map);
+  r.status = s;
+  renderReports();
+}
+
+// PDF EXPORT
+function downloadPDF() {
+  if (!lastReport) return alert("Generate report first");
+
+  const doc = new jspdf.jsPDF();
+
+  doc.text("CivicSense AI Report", 10, 10);
+  doc.text("Token: " + lastReport.id, 10, 20);
+  doc.text("Issue: " + lastReport.cat, 10, 30);
+  doc.text("Location: " + lastReport.state + ", " + lastReport.dist, 10, 40);
+  doc.text("Status: " + lastReport.status, 10, 50);
+  doc.text("Description: " + lastReport.desc, 10, 60);
+
+  doc.save("report.pdf");
+}
+
+// DEMO
+function loadDemo() {
+  for(let i=1;i<=5;i++){
+    reports.push({
+      id:"TOK"+i,
+      cat:"Garbage",
+      state:"Maharashtra",
+      dist:"District "+i,
+      desc:"Demo issue",
+      lat:19+Math.random(),
+      lng:72+Math.random(),
+      status:"Pending"
+    });
+  }
 }
