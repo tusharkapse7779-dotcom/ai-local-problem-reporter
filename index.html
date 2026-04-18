@@ -1,1 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Problem Reporter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="container">
+  <h1>🚀 AI Problem Reporter</h1>
+  <p class="subtitle">Smart civic complaint generator</p>
+
+  <div class="card">
+    <select id="category">
+      <option value="">Select Issue Type</option>
+      <option>Garbage</option>
+      <option>Pothole</option>
+      <option>Water Leakage</option>
+      <option>Street Light</option>
+    </select>
+
+    <input id="problem" placeholder="Describe the issue">
+    <input id="location" placeholder="Enter location">
+
+    <button onclick="generate()">⚡ Generate Report</button>
+  </div>
+
+  <div class="output-card">
+    <h3>📄 AI Report</h3>
+    <pre id="output">Your result will appear here...</pre>
+  </div>
+
+  <p class="footer">Built for Hackathon 🚀</p>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
