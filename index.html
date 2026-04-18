@@ -3,6 +3,7 @@
 <head>
   <title>CivicSense AI</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
 <body>
 
@@ -16,7 +17,6 @@
       <option>Water Leakage</option>
       <option>Road Damage</option>
       <option>Dog Bite</option>
-      <option>Street Light</option>
     </select>
 
     <select id="state">
@@ -24,35 +24,41 @@
       <option>Maharashtra</option>
       <option>Delhi</option>
       <option>Karnataka</option>
-      <option>Telangana</option>
     </select>
 
     <input id="district" placeholder="Enter District">
-
-    <input type="file" id="imageInput" accept="image/*" capture="environment">
-
     <input id="problem" placeholder="Describe problem">
 
-    <button id="voiceBtn">🎤 Voice Input</button>
+    <input type="file" id="imageInput" accept="image/*" capture="environment">
+    <img id="preview">
+
+    <button onclick="getLocation()">📍 Get Location</button>
     <button id="btn">🚀 Generate Report</button>
+    <button onclick="downloadPDF()">📄 Export PDF</button>
   </div>
 
-  <div class="output-card">
-    <pre id="output">Ready...</pre>
-  </div>
+  <div id="map"></div>
 
-  <h3>📊 Issue Analytics</h3>
-  <canvas id="issueChart"></canvas>
+  <pre id="output">Ready...</pre>
 
-  <h3>📊 State-wise Reports</h3>
-  <canvas id="stateChart"></canvas>
-
-  <h3>📋 Reports</h3>
+  <h3>Reports</h3>
   <div id="reportList"></div>
+
+  <h3>Admin Panel</h3>
+  <input id="searchToken" placeholder="Token">
+  <select id="statusUpdate">
+    <option>Pending</option>
+    <option>In Progress</option>
+    <option>Completed</option>
+  </select>
+  <button onclick="updateStatus()">Update</button>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
