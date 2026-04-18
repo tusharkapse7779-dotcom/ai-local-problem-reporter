@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Problem Reporter</title>
+  <title>AI Civic Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h1>🚀 AI Problem Reporter</h1>
-  <p class="subtitle">Smart civic complaint generator</p>
+  <h1>🚀 Civic Analytics Dashboard</h1>
 
   <div class="card">
     <select id="category">
-      <option value="">Select Issue Type</option>
+      <option value="">Select Issue</option>
       <option>Garbage</option>
       <option>Pothole</option>
       <option>Water Leakage</option>
       <option>Street Light</option>
     </select>
 
-    <input id="problem" placeholder="Describe the issue">
-    <input id="location" placeholder="Enter location">
+    <select id="state">
+      <option value="">Select State</option>
+      <option>Maharashtra</option>
+      <option>Delhi</option>
+      <option>Karnataka</option>
+      <option>Telangana</option>
+    </select>
 
-    <button onclick="generate()">⚡ Generate Report</button>
+    <input id="district" placeholder="Enter District">
+    <input type="file" id="imageInput" accept="image/*" capture="environment">
+    <input id="problem" placeholder="Describe problem">
+
+    <button id="btn">🚀 Generate Report</button>
   </div>
 
   <div class="output-card">
-    <h3>📄 AI Report</h3>
-    <pre id="output">Your result will appear here...</pre>
+    <pre id="output">Ready...</pre>
   </div>
 
-  <p class="footer">Built for Hackathon 🚀</p>
+  <h3>📊 Analytics</h3>
+  <canvas id="chart"></canvas>
+
+  <h3>📋 Reports</h3>
+  <div id="reportList"></div>
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
